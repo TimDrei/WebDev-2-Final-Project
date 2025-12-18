@@ -1,0 +1,62 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl    = env("DIRECT_URL")
+}
+
+model User {
+  id            String     @id
+  name          String?
+  decks         Deck[]
+  folders       Folder[]
+}
+
+model Folder {
+  id            String     @default(cuid()) @id
+  name          String
+  description   String     @default("")
+  color         String     @default("#4F46E5")
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  user          User       @relation(fields: [userId], references: [id])
+  userId        String
+  decks         Deck[]
+}
+
+model Deck {
+  id            String     @default(cuid()) @id
+  title         String
+  description   String     @default("")
+  topics        String[]   @default([])
+  studyProgress Int        @default(0)
+  cardCount     Int       
+  accuracy      Int        @default(0)
+  attempts      Int        @default(0)
+  averageScore  Int        @default(0)
+  lastStudied   DateTime   @default(now())
+  isStarred     Boolean    @default(false)
+  user          User       @relation(fields: [userId], references: [id])
+  userId        String
+  folder        Folder?    @relation(fields: [folderId], references: [id])
+  folderId      String?
+  flashcards    Flashcard[]
+}
+
+model Flashcard {
+  id            String     @default(cuid()) @id
+  term          String
+  definition    String    
+  deck          Deck       @relation(fields: [deckId], references: [id], onDelete: Cascade)
+  deckId        String
+}
